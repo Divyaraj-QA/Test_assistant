@@ -6,9 +6,6 @@ on:
   pull_request:
     branches: [main]
 
-#------------------------------------------------
-# Shared shell snippet to list the workspace tree
-#------------------------------------------------
 env:
   SHOW_TREE: |
     echo "➡️  pwd = $(pwd)"
@@ -24,81 +21,65 @@ env:
     fi
 
 jobs:
-# --------------- 1️⃣ INSPECT --------------------
   debug:
     name: 🔍 Inspect workspace
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
-
       - name: 🌳 Show workspace tree
         run: |
           $SHOW_TREE
 
-# --------------- 2️⃣ ORCHESTRATOR --------------
   test-orchestrator:
     needs: debug
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
-
       - name: 🌳 Show workspace tree
         run: |
           $SHOW_TREE
-
       - uses: actions/setup-node@v3
         with:
           node-version: '20'
-
       - name: Install deps
         run: npm ci
-        working-directory: orchestrator
-
+        working-directory: testpilot_ai_agent/orchestrator
       - name: Dry-run orchestrator
         run: echo "✅ Orchestrator reached"
-        working-directory: orchestrator
+        working-directory: testpilot_ai_agent/orchestrator
 
-# --------------- 3️⃣ UI TESTS ------------------
   test-ui:
     needs: debug
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
-
       - name: 🌳 Show workspace tree
         run: |
           $SHOW_TREE
-
       - uses: actions/setup-node@v3
         with:
           node-version: '20'
-
       - name: Install deps & Playwright
         run: |
           npm ci
           npx playwright install --with-deps
-        working-directory: action-js
-
+        working-directory: testpilot_ai_agent/action-js
       - name: Run Playwright tests
         run: npx playwright test
-        working-directory: action-js
+        working-directory: testpilot_ai_agent/action-js
 
-# --------------- 4️⃣ API TESTS -----------------
   test-api:
     needs: debug
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
-
       - name: 🌳 Show workspace tree
         run: |
           $SHOW_TREE
-
       - uses: actions/setup-java@v3
         with:
           distribution: 'temurin'
           java-version: '17'
-
       - name: Run API tests
         run: mvn test
-        working-directory: action-java
+        working-directory: testpilot_ai_agent/action-java
