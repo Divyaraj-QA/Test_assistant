@@ -6,63 +6,99 @@ on:
   pull_request:
     branches: [main]
 
+#------------------------------------------------
+# Shared shell snippet to list the workspace tree
+#------------------------------------------------
+env:
+  SHOW_TREE: |
+    echo "➡️  pwd = $(pwd)"
+    echo "➡️  First level:"
+    ls -la
+    echo "➡️  Recursive tree (2 levels):"
+    if command -v tree >/dev/null; then
+      tree -L 2
+    else
+      sudo apt-get update -qq
+      sudo apt-get install -y tree
+      tree -L 2
+    fi
+
 jobs:
+# --------------- 1️⃣ INSPECT --------------------
+  debug:
+    name: 🔍 Inspect workspace
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: 🌳 Show workspace tree
+        run: |
+          $SHOW_TREE
+
+# --------------- 2️⃣ ORCHESTRATOR --------------
   test-orchestrator:
+    needs: debug
     runs-on: ubuntu-latest
-    defaults:
-      run:
-        working-directory: orchestrator
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v3
+      - uses: actions/checkout@v3
 
-      - name: Set up Node.js
-        uses: actions/setup-node@v3
+      - name: 🌳 Show workspace tree
+        run: |
+          $SHOW_TREE
+
+      - uses: actions/setup-node@v3
         with:
           node-version: '20'
 
-      - name: Install orchestrator dependencies
+      - name: Install deps
         run: npm ci
+        working-directory: orchestrator
 
-      - name: Dry run orchestrator
-        run: echo "✅ Orchestrator ready"
+      - name: Dry-run orchestrator
+        run: echo "✅ Orchestrator reached"
+        working-directory: orchestrator
 
+# --------------- 3️⃣ UI TESTS ------------------
   test-ui:
+    needs: debug
     runs-on: ubuntu-latest
-    defaults:
-      run:
-        working-directory: action-js
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v3
+      - uses: actions/checkout@v3
 
-      - name: Set up Node.js
-        uses: actions/setup-node@v3
+      - name: 🌳 Show workspace tree
+        run: |
+          $SHOW_TREE
+
+      - uses: actions/setup-node@v3
         with:
           node-version: '20'
 
-      - name: Install dependencies & Playwright
+      - name: Install deps & Playwright
         run: |
           npm ci
           npx playwright install --with-deps
+        working-directory: action-js
 
       - name: Run Playwright tests
         run: npx playwright test
+        working-directory: action-js
 
+# --------------- 4️⃣ API TESTS -----------------
   test-api:
+    needs: debug
     runs-on: ubuntu-latest
-    defaults:
-      run:
-        working-directory: action-java
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v3
+      - uses: actions/checkout@v3
 
-      - name: Set up Java
-        uses: actions/setup-java@v3
+      - name: 🌳 Show workspace tree
+        run: |
+          $SHOW_TREE
+
+      - uses: actions/setup-java@v3
         with:
           distribution: 'temurin'
           java-version: '17'
 
       - name: Run API tests
         run: mvn test
+        working-directory: action-java
