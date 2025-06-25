@@ -1,0 +1,67 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  test-orchestrator:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v3
+
+    - name: Set up Node.js
+      uses: actions/setup-node@v3
+      with:
+        node-version: '20'
+
+    - name: Install orchestrator dependencies
+      working-directory: orchestrator
+      run: npm ci
+
+    - name: Run orchestrator (dry run)
+      working-directory: orchestrator
+      run: echo "✅ Orchestrator ready"
+
+  test-ui:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v3
+
+    - name: Set up Node.js
+      uses: actions/setup-node@v3
+      with:
+        node-version: '20'
+
+    - name: Install Playwright dependencies
+      working-directory: action-js
+      run: |
+        npm ci
+        npx playwright install --with-deps
+
+    - name: Run Playwright tests
+      working-directory: action-js
+      run: npx playwright test
+
+  test-api:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v3
+
+    - name: Set up Java
+      uses: actions/setup-java@v3
+      with:
+        distribution: 'temurin'
+        java-version: '17'
+
+    - name: Run Rest-Assured tests
+      working-directory: action-java
+      run: mvn test
