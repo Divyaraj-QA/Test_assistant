@@ -30,19 +30,20 @@ jobs:
         run: |
           $SHOW_TREE
 
+ 
+
   test-orchestrator:
     needs: debug
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
       - name: 🌳 Show workspace tree
-        run: |
-          $SHOW_TREE
+        run: $SHOW_TREE
       - uses: actions/setup-node@v3
         with:
           node-version: '20'
       - name: Install deps
-        run: npm ci
+        run: npm install
         working-directory: testassistant_ai_agent/testassistant_ai_agent/orchestrator
       - name: Dry-run orchestrator
         run: echo "✅ Orchestrator reached"
@@ -54,19 +55,19 @@ jobs:
     steps:
       - uses: actions/checkout@v3
       - name: 🌳 Show workspace tree
-        run: |
-          $SHOW_TREE
+        run: $SHOW_TREE
       - uses: actions/setup-node@v3
         with:
           node-version: '20'
       - name: Install deps & Playwright
         run: |
-          npm ci
+          npm install
           npx playwright install --with-deps
         working-directory: testassistant_ai_agent/testassistant_ai_agent/action-js
       - name: Run Playwright tests
         run: npx playwright test
         working-directory: testassistant_ai_agent/testassistant_ai_agent/action-js
+
 
   test-api:
     needs: debug
